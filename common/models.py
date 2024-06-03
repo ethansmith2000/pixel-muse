@@ -203,8 +203,7 @@ class PixelTokenizer(torch.nn.Module):
         self.h = self.w = image_size
         self.hw = image_size * image_size
         self.c = num_channels if per_channel else 1
-        self.pos_embed = nn.Parameter(torch.randn(1, image_size * image_size * num_channels if per_channel else image_size * image_size,
-                                                        dim) * 0.005)
+        self.pos_embed = nn.Parameter(torch.randn(1, image_size * image_size * num_channels if per_channel else image_size * image_size, dim) * 0.005)
         if per_channel:
             classes = torch.linspace(low, high, vocab_size)[None,None,:]
         else:

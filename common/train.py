@@ -58,6 +58,8 @@ def train(args):
     global_step, first_epoch, progress_bar = more_init(accelerator, args, train_dataloader, train_dataset, 
                                                     logger, num_update_steps_per_epoch, global_step, wandb_name="pixel_muse")
 
+    model_fwd = torch.compile(model)
+
     grad_norm = None
     for epoch in range(first_epoch, args.num_train_epochs):
         model.train()
@@ -66,16 +68,18 @@ def train(args):
                 # model_input = vae.encode(batch["pixel_values"].to(dtype=weight_dtype)).latent_dist.sample() * vae.config.scaling_factor
                 orig_ids = model.tokenizer.encode(batch[0])
                 ids = orig_ids.clone()
-                mask_mask = torch.bernoulli(torch.full(ids.shape, args.mask_p)).bool()
+                mask_mask = torch.rand(ids.shape) * (args.mask_p_high - args.mask_p_low) + args.mask_p_low
+                mask_mask = torch.bernoulli(mask_mask).bool()
                 mask_token = torch.full_like(ids, model.tokenizer.mask_token_id)
                 ids[mask_mask] = mask_token[mask_mask]
 
-                mutate_mask = torch.bernoulli(torch.full(ids.shape, args.mutate_p)).bool()
+                mutate_mask = torch.rand(ids.shape) * (args.mutate_p_high - args.mutate_p_low) + args.mutate_p_low
+                mutate_mask = torch.bernoulli(mutate_mask).bool()
                 mutate_token = torch.randint_like(ids, 0, model.tokenizer.vocab_size)
                 ids[mutate_mask] = mutate_token[mutate_mask]
 
                 embs = model.tokenizer.to_embs(ids)
-                preds = model(embs)
+                preds = model_fwd(embs)
                 loss = torch.nn.functional.cross_entropy(preds.view(-1, preds.size(-1)), orig_ids.reshape(-1))
 
                 accelerator.backward(loss)

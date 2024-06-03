@@ -270,14 +270,15 @@ default_arguments = dict(
     output_dir="model-output",
     seed=None,
     resolution=32,
-    train_batch_size=16,
-    max_train_steps=1250,
+    train_batch_size=64,
+    max_train_steps=50_000,
     validation_steps=250,
-    checkpointing_steps=500,
-    resume_from_checkpoint=None,
+    checkpointing_steps=2000,
+    resume_from_checkpoint="/home/ubuntu/pixel-muse/common/model-output/checkpoint-10000",
+    # resume_from_checkpoint=None,
     gradient_accumulation_steps=1,
     gradient_checkpointing=False,
-    learning_rate=6.0e-5,
+    learning_rate=1.0e-4,
     lr_scheduler="linear",
     lr_warmup_steps=50,
     lr_num_cycles=1,
@@ -298,7 +299,6 @@ default_arguments = dict(
     use_wandb=True,
     pin_memory=True,
 
-
     image_size=32,
     quant_k=4096,
     dim=512,
@@ -309,8 +309,10 @@ default_arguments = dict(
     per_channel=False,
     num_validation_steps=50,
 
-    mask_p=0.75,
-    mutate_p=0.15,
+    mask_p_low=0.05,
+    mask_p_high=1.0,
+    mutate_p_low=0.0,
+    mutate_p_high=0.2,
 )
 
 
